@@ -1,30 +1,54 @@
 // ===================== 마더보드Lab 홈페이지 스크립트 =====================
 
+// 상담 신청 폼을 Formspree(https://formspree.io)로 전송합니다.
+// README.md 안내에 따라 본인의 Formspree 폼 ID로 교체해주세요.
+var FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+
 document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- 모바일 메뉴 토글 ---------- */
   var menuBtn = document.getElementById('mobile-menu-btn');
   var menuPanel = document.getElementById('mobile-menu-panel');
 
+  function closeMobileMenu() {
+    menuPanel.classList.add('hidden');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    menuBtn.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
+  }
+
+  function openMobileMenu() {
+    menuPanel.classList.remove('hidden');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    menuBtn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+  }
+
   if (menuBtn && menuPanel) {
     menuBtn.addEventListener('click', function () {
       var isHidden = menuPanel.classList.contains('hidden');
       if (isHidden) {
-        menuPanel.classList.remove('hidden');
-        menuBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        openMobileMenu();
       } else {
-        menuPanel.classList.add('hidden');
-        menuBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        closeMobileMenu();
       }
     });
 
     // 모바일 메뉴 링크 클릭 시 메뉴 닫기
     var mobileLinks = document.querySelectorAll('.mobile-nav-link');
     mobileLinks.forEach(function (link) {
-      link.addEventListener('click', function () {
-        menuPanel.classList.add('hidden');
-        menuBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-      });
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    // Esc 키 또는 메뉴 바깥 클릭 시 닫기
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !menuPanel.classList.contains('hidden')) {
+        closeMobileMenu();
+        menuBtn.focus();
+      }
+    });
+    document.addEventListener('click', function (e) {
+      if (menuPanel.classList.contains('hidden')) { return; }
+      if (menuPanel.contains(e.target) || menuBtn.contains(e.target)) { return; }
+      closeMobileMenu();
     });
   }
 
@@ -51,16 +75,70 @@ document.addEventListener('DOMContentLoaded', function () {
       faqItems.forEach(function (other) {
         other.classList.remove('open');
         other.querySelector('.faq-answer').style.maxHeight = null;
+        other.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
       });
 
       if (!isOpen) {
         item.classList.add('open');
         answer.style.maxHeight = answer.scrollHeight + 40 + 'px';
+        question.setAttribute('aria-expanded', 'true');
       }
     });
   });
 
-  /* ---------- 상담 신청 폼 제출 ---------- */
+  /* ---------- 스크롤 리빌 애니메이션 ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if (revealEls.length && 'IntersectionObserver' in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function (el) { revealObserver.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('reveal-visible'); });
+  }
+
+  /* ---------- 스크롤 위치에 따른 내비게이션 활성 표시 ---------- */
+  var navLinks = document.querySelectorAll('.nav-link');
+  var navSections = Array.prototype.slice.call(navLinks).map(function (link) {
+    return document.querySelector(link.getAttribute('href'));
+  }).filter(Boolean);
+
+  if (navSections.length && 'IntersectionObserver' in window) {
+    var navObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var id = '#' + entry.target.id;
+        var link = document.querySelector('.nav-link[href="' + id + '"]');
+        if (!link) { return; }
+        if (entry.isIntersecting) {
+          navLinks.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    navSections.forEach(function (section) { navObserver.observe(section); });
+  }
+
+  /* ---------- 맨 위로 이동 버튼 ---------- */
+  var backToTop = document.getElementById('back-to-top');
+  if (backToTop) {
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 480) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    });
+    backToTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ---------- 상담 신청 폼 제출 (Formspree) ---------- */
   var form = document.getElementById('consultation-form');
   var submitBtn = document.getElementById('submit-btn');
   var submitBtnText = document.getElementById('submit-btn-text');
@@ -85,16 +163,18 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = true;
       submitBtnText.textContent = '전송 중...';
 
-      fetch('tables/consultation_requests', {
+      fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           name: name,
           phone: phone,
           email: email,
           service_interest: serviceInterest,
-          message: message,
-          status: 'new'
+          message: message
         })
       })
         .then(function (res) {

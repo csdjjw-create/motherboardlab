@@ -1,7 +1,9 @@
 # 마더보드Lab 홈페이지
 
 블로그 글쓰기 코칭 및 대행 서비스를 제공하는 **마더보드Lab**의 원페이지(One-Page) 홈페이지입니다.
-`마더보드Lab_홈페이지_최종기획안.md` 기획안의 11개 섹션 구성과 5대 필수 요건(FAQ, 근거자료, 추천/예외 상황, 맥락 중심 서술, 광고표시법 준수)을 반영하여 제작했습니다.
+`docs/plan.md` 기획안의 11개 섹션 구성과 5대 필수 요건(FAQ, 근거자료, 추천/예외 상황, 맥락 중심 서술, 광고표시법 준수)을 반영하여 제작했습니다.
+
+> 이 저장소는 원래 다른 플랫폼(노코드 빌더)에서 만들어진 사이트를 그대로 옮겨온 뒤, 정적 사이트 환경에 맞게 업그레이드한 버전입니다. 업그레이드 내역은 [8. 업그레이드 내역](#8-업그레이드-내역)을 참고해주세요.
 
 ## 1. 완료된 기능
 
@@ -66,7 +68,54 @@ API 엔드포인트: `GET/POST tables/consultation_requests`, `GET/PUT/PATCH/DEL
 
 ## 6. 사용 기술
 
-- HTML5 / Tailwind CSS (CDN) / 커스텀 CSS
+- HTML5 / Tailwind CSS (빌드된 정적 CSS) / 커스텀 CSS
 - Vanilla JavaScript (프레임워크 없음)
 - Font Awesome 아이콘, Google Fonts(Noto Sans KR, Gowun Batang)
-- Table API (`consultation_requests`) — 상담 신청 데이터 저장
+- Formspree — 상담 신청 폼 제출 처리 (아래 7번 참고)
+
+## 7. 로컬 개발 · 배포 준비
+
+### 7-1. CSS 빌드
+
+기존에는 Tailwind CDN 런타임 컴파일러(`cdn.tailwindcss.com`)를 사용했습니다. 이 방식은 Tailwind 공식 문서에서도 **프로덕션 사용을 권장하지 않으며**(매 요청마다 브라우저에서 CSS를 실시간 컴파일하므로 느림), 이번 업그레이드에서 빌드 타임에 미리 컴파일된 정적 CSS(`css/tailwind.css`)로 교체했습니다.
+
+```bash
+npm install        # 최초 1회
+npm run build:css  # css/tailwind.css 생성 (배포 전 필수)
+npm run watch:css   # 개발 중 index.html 클래스 변경 시 자동 재빌드
+```
+
+`index.html`의 Tailwind 클래스를 수정했다면 배포 전 반드시 `npm run build:css`를 다시 실행해야 변경 사항이 `css/tailwind.css`에 반영됩니다. 이 파일은 저장소에 커밋되어 있으므로, 빌드 없이 정적 파일만 올려도 사이트는 정상 동작합니다.
+
+### 7-2. 상담 신청 폼 (Formspree) 연동
+
+기존 사이트는 노코드 빌더 전용 백엔드(`tables/consultation_requests` Table API)를 사용했는데, 이 저장소로 옮기면서 해당 API가 더 이상 존재하지 않습니다. 별도 백엔드 없이 폼을 받을 수 있도록 [Formspree](https://formspree.io)로 교체했습니다.
+
+1. [formspree.io](https://formspree.io)에서 무료 계정을 만들고 새 폼을 생성합니다.
+2. 발급받은 폼 엔드포인트(`https://formspree.io/f/xxxxxxxx`)를 복사합니다.
+3. `js/main.js` 최상단의 `FORMSPREE_ENDPOINT` 값을 실제 엔드포인트로 교체합니다.
+
+```js
+var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xxxxxxxx';
+```
+
+교체 전까지는 폼 제출 시 전송 실패 메시지가 표시됩니다. 실제 서비스 배포 전에 반드시 교체해주세요.
+
+### 7-3. 배포 (GitHub Pages 예시)
+
+이 저장소는 순수 정적 파일(`index.html`, `css/`, `js/`)로 구성되어 있어 별도 서버 없이 바로 호스팅할 수 있습니다.
+
+1. GitHub 저장소 **Settings → Pages**에서 배포 브랜치를 지정합니다.
+2. 배포 전 `index.html`, `robots.txt`, `sitemap.xml` 내 `https://motherboardlab.com/` 부분을 실제 도메인으로 교체합니다 (현재는 placeholder 도메인입니다).
+3. `og-image.png`(소셜 공유 미리보기 이미지, 1200×630px 권장)를 준비해 저장소 루트에 추가하면 카카오톡·SNS 공유 시 썸네일이 표시됩니다.
+
+## 8. 업그레이드 내역
+
+이번 작업에서 기존 소스를 그대로 옮겨온 뒤 아래 항목을 개선했습니다. 카피·정보 구조·광고법 준수 원칙(기획안 4장 체크리스트)은 그대로 유지했습니다.
+
+- **성능**: Tailwind CDN 런타임 컴파일러 → 빌드 타임 정적 CSS(약 16KB, minify)로 전환
+- **SEO**: Open Graph/Twitter Card 메타태그, canonical, JSON-LD(ProfessionalService) 구조화 데이터, `robots.txt`, `sitemap.xml`, 파비콘 추가
+- **접근성**: 본문 바로가기(skip link), 모바일 메뉴/FAQ 아코디언 `aria-expanded` 상태 연결, 장식용 아이콘 `aria-hidden` 처리, 폼 라디오 그룹 `fieldset/legend`, 폼 상태 메시지 `aria-live` 처리
+- **폼 처리**: 존재하지 않는 Table API 호출 → Formspree 연동으로 교체 (7-2 참고)
+- **UX**: 스크롤 시 섹션별 페이드인 애니메이션, 현재 위치 내비게이션 하이라이트, 맨 위로 이동 버튼, 모바일 메뉴 Esc/바깥 클릭 닫기
+- **견고성**: 아이콘 폰트 로드 실패 시에도 모바일 메뉴 버튼이 크기를 잃지 않도록 명시적 크기 지정
