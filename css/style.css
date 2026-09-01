@@ -1,0 +1,204 @@
+/* ===================== 마더보드Lab 홈페이지 스타일 ===================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  scroll-padding-top: 70px;
+}
+
+section {
+  scroll-margin-top: 64px;
+}
+
+/* Section label / title */
+.section-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #9BB859;
+  background: rgba(185, 209, 117, 0.15);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #450C3F;
+  margin-top: 0.75rem;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* Nav links */
+.nav-link {
+  position: relative;
+  transition: color 0.2s;
+}
+.nav-link:hover {
+  color: #450C3F;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: #B9D175;
+  transition: width 0.2s;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.mobile-nav-link {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Process steps */
+.process-step {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #f1f1f1;
+}
+
+.process-num {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #450C3F;
+  color: #B9D175;
+  font-weight: 900;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* FAQ accordion */
+.faq-item {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  text-align: left;
+  padding: 1.1rem 1.4rem;
+  font-weight: 700;
+  color: #450C3F;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  gap: 1rem;
+}
+
+.faq-question i {
+  transition: transform 0.25s;
+  color: #9BB859;
+  flex-shrink: 0;
+}
+
+.faq-item.open .faq-question i {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0 1.4rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.faq-item.open .faq-answer {
+  padding: 0 1.4rem 1.2rem;
+}
+
+/* Form elements */
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #450C3F;
+  margin-bottom: 0.4rem;
+}
+
+.form-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #450C3F;
+  box-shadow: 0 0 0 3px rgba(69, 12, 63, 0.1);
+}
+
+.radio-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-pill input {
+  accent-color: #450C3F;
+}
+
+.radio-pill:has(input:checked) {
+  border-color: #450C3F;
+  background: rgba(69, 12, 63, 0.06);
+  color: #450C3F;
+  font-weight: 700;
+}
+
+/* Feedback box states */
+#form-feedback.success {
+  background: rgba(185, 209, 117, 0.2);
+  color: #450C3F;
+  display: block;
+}
+
+#form-feedback.error {
+  background: #fee2e2;
+  color: #991b1b;
+  display: block;
+}
+
+/* Header shadow on scroll */
+#site-header.scrolled {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
