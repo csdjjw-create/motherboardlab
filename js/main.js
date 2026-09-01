@@ -2,7 +2,7 @@
 
 // 상담 신청 폼을 Google Sheets(Apps Script 웹 앱)로 전송합니다.
 // README.md 7-2 섹션 안내에 따라 본인의 Apps Script 웹 앱 URL로 교체해주세요.
-var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzx7cgWrgj7g7jK4FfmDtQhzCm50pf-cTFP9ENENlgYo7QkkFz-1e1ttOsKaAUq3ihd0g/exec';
 
 document.addEventListener('DOMContentLoaded', function () {
 
