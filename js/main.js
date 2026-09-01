@@ -1,8 +1,8 @@
 // ===================== 마더보드Lab 홈페이지 스크립트 =====================
 
-// 상담 신청 폼을 Formspree(https://formspree.io)로 전송합니다.
-// README.md 안내에 따라 본인의 Formspree 폼 ID로 교체해주세요.
-var FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+// 상담 신청 폼을 Google Sheets(Apps Script 웹 앱)로 전송합니다.
+// README.md 7-2 섹션 안내에 따라 본인의 Apps Script 웹 앱 URL로 교체해주세요.
+var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ---------- 상담 신청 폼 제출 (Formspree) ---------- */
+  /* ---------- 상담 신청 폼 제출 (Google Sheets) ---------- */
   var form = document.getElementById('consultation-form');
   var submitBtn = document.getElementById('submit-btn');
   var submitBtnText = document.getElementById('submit-btn-text');
@@ -163,13 +163,12 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = true;
       submitBtnText.textContent = '전송 중...';
 
-      fetch(FORMSPREE_ENDPOINT, {
+      // Apps Script 웹 앱은 브라우저의 CORS preflight를 지원하지 않으므로
+      // no-cors 모드 + form 인코딩으로 전송합니다 (응답 본문은 읽을 수 없음).
+      fetch(GOOGLE_SHEETS_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
+        mode: 'no-cors',
+        body: new URLSearchParams({
           name: name,
           phone: phone,
           email: email,
@@ -177,10 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
           message: message
         })
       })
-        .then(function (res) {
-          if (!res.ok) { throw new Error('전송 실패'); }
-          return res.json();
-        })
         .then(function () {
           showFeedback('상담 신청이 정상적으로 접수되었습니다. 빠르게 확인 후 연락드리겠습니다.', 'success');
           form.reset();

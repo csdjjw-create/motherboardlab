@@ -71,7 +71,7 @@ API 엔드포인트: `GET/POST tables/consultation_requests`, `GET/PUT/PATCH/DEL
 - HTML5 / Tailwind CSS (빌드된 정적 CSS) / 커스텀 CSS
 - Vanilla JavaScript (프레임워크 없음)
 - Font Awesome 아이콘, Google Fonts(Noto Sans KR, Gowun Batang)
-- Formspree — 상담 신청 폼 제출 처리 (아래 7번 참고)
+- Google Apps Script (Google Sheets 연동) — 상담 신청 폼 제출 처리 (아래 7번 참고)
 
 ## 7. 로컬 개발 · 배포 준비
 
@@ -87,19 +87,23 @@ npm run watch:css   # 개발 중 index.html 클래스 변경 시 자동 재빌�
 
 `index.html`의 Tailwind 클래스를 수정했다면 배포 전 반드시 `npm run build:css`를 다시 실행해야 변경 사항이 `css/tailwind.css`에 반영됩니다. 이 파일은 저장소에 커밋되어 있으므로, 빌드 없이 정적 파일만 올려도 사이트는 정상 동작합니다.
 
-### 7-2. 상담 신청 폼 (Formspree) 연동
+### 7-2. 상담 신청 폼 (Google Sheets) 연동
 
-기존 사이트는 노코드 빌더 전용 백엔드(`tables/consultation_requests` Table API)를 사용했는데, 이 저장소로 옮기면서 해당 API가 더 이상 존재하지 않습니다. 별도 백엔드 없이 폼을 받을 수 있도록 [Formspree](https://formspree.io)로 교체했습니다.
+기존 사이트는 노코드 빌더 전용 백엔드(`tables/consultation_requests` Table API)를 사용했는데, 이 저장소로 옮기면서 해당 API가 더 이상 존재하지 않습니다. 별도 서버 없이 무료로 이용할 수 있도록 **Google Apps Script 웹 앱을 통해 Google Sheets에 저장**하는 방식으로 연동했습니다. (Apps Script 코드: `google-apps-script/Code.gs`)
 
-1. [formspree.io](https://formspree.io)에서 무료 계정을 만들고 새 폼을 생성합니다.
-2. 발급받은 폼 엔드포인트(`https://formspree.io/f/xxxxxxxx`)를 복사합니다.
-3. `js/main.js` 최상단의 `FORMSPREE_ENDPOINT` 값을 실제 엔드포인트로 교체합니다.
+1. 새 구글 스프레드시트를 만들고, 첫 행에 헤더를 입력합니다: `제출일시 | 이름 | 연락처 | 이메일 | 관심 서비스 | 문의 내용`
+2. 시트 메뉴에서 **확장 프로그램 → Apps Script**를 열고, 기본 코드를 지운 뒤 이 저장소의 `google-apps-script/Code.gs` 내용을 그대로 붙여넣습니다.
+3. 코드 상단의 `NOTIFY_EMAIL` 값을 상담 알림을 받을 이메일 주소로 교체합니다.
+4. **배포 → 새 배포 → 유형: 웹 앱**을 선택하고, 실행 계정은 "나", 액세스 권한은 "모든 사용자"로 설정 후 배포합니다.
+5. 배포 후 발급되는 웹 앱 URL(`https://script.google.com/macros/s/xxxxxxxx/exec`)을 복사해 `js/main.js` 최상단의 `GOOGLE_SHEETS_ENDPOINT` 값에 붙여넣습니다.
 
 ```js
-var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xxxxxxxx';
+var GOOGLE_SHEETS_ENDPOINT = 'https://script.google.com/macros/s/xxxxxxxx/exec';
 ```
 
-교체 전까지는 폼 제출 시 전송 실패 메시지가 표시됩니다. 실제 서비스 배포 전에 반드시 교체해주세요.
+- 제출될 때마다 스프레드시트에 새 행이 추가되고, `NOTIFY_EMAIL`로 알림 메일이 발송됩니다.
+- 교체 전까지는 폼 제출 시 전송 실패 메시지가 표시됩니다. 실제 서비스 배포 전에 반드시 교체해주세요.
+- Apps Script 코드를 수정한 뒤에는 **새 배포**가 아니라 기존 배포에서 "배포 관리 → 수정 → 새 버전"으로 갱신해야 URL이 유지됩니다.
 
 ### 7-3. 배포 (GitHub Pages 예시)
 
@@ -116,6 +120,6 @@ var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xxxxxxxx';
 - **성능**: Tailwind CDN 런타임 컴파일러 → 빌드 타임 정적 CSS(약 16KB, minify)로 전환
 - **SEO**: Open Graph/Twitter Card 메타태그, canonical, JSON-LD(ProfessionalService) 구조화 데이터, `robots.txt`, `sitemap.xml`, 파비콘 추가
 - **접근성**: 본문 바로가기(skip link), 모바일 메뉴/FAQ 아코디언 `aria-expanded` 상태 연결, 장식용 아이콘 `aria-hidden` 처리, 폼 라디오 그룹 `fieldset/legend`, 폼 상태 메시지 `aria-live` 처리
-- **폼 처리**: 존재하지 않는 Table API 호출 → Formspree 연동으로 교체 (7-2 참고)
+- **폼 처리**: 존재하지 않는 Table API 호출 → Google Apps Script(Google Sheets) 연동으로 교체 (7-2 참고)
 - **UX**: 스크롤 시 섹션별 페이드인 애니메이션, 현재 위치 내비게이션 하이라이트, 맨 위로 이동 버튼, 모바일 메뉴 Esc/바깥 클릭 닫기
 - **견고성**: 아이콘 폰트 로드 실패 시에도 모바일 메뉴 버튼이 크기를 잃지 않도록 명시적 크기 지정
