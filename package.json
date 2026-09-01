@@ -1,0 +1,13 @@
+{
+  "name": "motherboardlab-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "마더보드Lab 원페이지 홈페이지",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}
