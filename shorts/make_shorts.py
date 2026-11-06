@@ -12,18 +12,18 @@ SLIDES = [
     ("8db72fa2", "경복궁 돌담길", "노랗게 물든 은행나무 터널", "in"),
     ("ef52d7ac", "창밖으로 보는 가을", "돌담 위로 쏟아지는 은행잎", "out"),
     ("08869e72", "한복 입고 궁 나들이", "경복궁 앞 한복 거리", "in"),
-    ("e980c0e2", "골목 산책", "랜턴이 걸린 자하문로 골목", "out"),
-    ("3a55dd37", "작은 책방 '책책'", "It's nice to meet you!", "in"),
-    ("eb28d8c3", "은행나무 한 그루", "조용한 주택가 골목", "out"),
-    ("fb8c6157", "부암동 가는 길", "단풍 물든 산이 반겨주는 곳", "in"),
+    ("3a55dd37", "골목 산책", "랜턴이 걸린 자하문로 골목", "out"),
+    ("7381d886", "작은 책방 '책책'", "It's nice to meet you!", "in"),
+    ("e980c0e2", "은행나무 한 그루", "조용한 주택가 골목", "out"),
+    ("eb28d8c3", "부암동 가는 길", "단풍 물든 산이 반겨주는 곳", "in"),
     ("37784133", "단풍 속 한옥", "부암동 숲길 산책", "pan"),
-    ("0f17b45e", "부암동에서 내려다본 서울", "빨간 지붕 너머 도심", "out"),
-    ("da38b62e", "골목 고양이들", "햇살 아래 낮잠 시간", "in"),
-    ("0be75bc9", "소품샵 구경", "초록 덩굴 아래 화분 가게", "out"),
-    ("85e1051e", "따뜻한 조명 아래", "감성 가득 잡화점", "in"),
-    ("88dd6ecf", "꽃 한 아름", "가을 색을 닮은 꽃들", "out"),
-    ("66019bb5", "한옥 골목", "좁은 길 끝에 숨은 공간", "in"),
-    ("7381d886", "한옥 카페에서 마무리", "효자로 7길", "out"),
+    ("fb8c6157", "부암동에서 내려다본 서울", "빨간 지붕 너머 도심", "out"),
+    ("0f17b45e", "골목 고양이들", "햇살 아래 낮잠 시간", "in"),
+    ("da38b62e", "소품샵 구경", "초록 덩굴 아래 화분 가게", "out"),
+    ("0be75bc9", "따뜻한 조명 아래", "감성 가득 잡화점", "in"),
+    ("85e1051e", "꽃 한 아름", "가을 색을 닮은 꽃들", "out"),
+    ("88dd6ecf", "한옥 골목", "좁은 길 끝에 숨은 공간", "in"),
+    ("66019bb5", "한옥 카페에서 마무리", "효자로 7길", "out"),
 ]
 INTRO, SLIDE, OUTRO, XF = 3.0, 2.4, 2.6, 0.45
 SCALE = 1.14
@@ -120,7 +120,9 @@ def render(si, t_abs):
     lt = min(max(lt, 0), 1)
     fr = frame_from(base, mode, lt).convert("RGBA")
     # overlay fade-in
-    a = min(1, max(0, (t_abs - starts[si]) / 0.35))
+    a = min(1, max(0, (t_abs - starts[si]) / 0.3))
+    if si < len(segs) - 1:  # caption gone before crossfade to next photo starts
+        a = min(a, max(0, (starts[si + 1] - XF - t_abs) / 0.25))
     if a < 1:
         o = ov.copy(); o.putalpha(o.getchannel("A").point(lambda v: int(v * a)))
     else:
@@ -174,8 +176,8 @@ for fi in range(nframes):
         a = (t - (starts[si + 1] - XF)) / XF
         nxt = render(si + 1, starts[si + 1])
         img = Image.blend(img, nxt, a)
-    if fi in (15, int(5 * FPS), int(20 * FPS)):
-        img.save(OUT + f".preview{fi}.jpg", quality=80)
+    if si >= 1 and abs(t - (starts[si] + segs[si][3] * 0.5)) < 0.5 / FPS:
+        img.save(OUT + f".preview{si:02d}.jpg", quality=80)
     p.stdin.write(img.tobytes())
 p.stdin.close(); p.wait()
 print("done", total, "s")
